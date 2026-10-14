@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+   <meta charset="UTF-8">
+   <title>Projet React : Panier d'achat</title>
+   <!-- React & ReactDOM from CDN -->
+   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+   <!-- Babel standalone for in-browser JSX transpilation -->
+   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+   <link rel="icon" href="src/favicon.ico">
+
+   <style>
+      /* ===== style.css ===== */
+      @charset "UTF-8";
+
+      body {
+         font-family: Verdana, Helvetica, Arial, sans-serif;
+         background-color: white;
+         margin: 0% 2%;
+      }
+
+      kbd {
+         padding: 0px 2px;
+         font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+         color: rgb(60, 60, 60);
+         font-weight: bold;
+         font-size: large;
+      }
+
+      div#insertReactHere {
+         border: none;
+      }
+
+      /* ===== app.css ===== */
+      body {
+         font-size: 14px;
+      }
+
+      h4 {
+         margin: 12px 0px;
+         font-size: x-large;
+      }
+
+      #insertReactHere>div {
+         display: flex;
+      }
+
+      div.productList,
+      div.cart {
+         padding: 0px 10px 10px 10px;
+         border: solid thin #DDD;
+         margin: 5px;
+         height: 600px;
+      }
+
+      div.productList {
+         width: 600px;
+         position: relative;
+         top: 0px;
+         left: 0px;
+      }
+
+      div.cart {
+         width: 280px;
+      }
+
+      img.button {
+         margin: 0px 5px;
+         width: 20px;
+         border: solid 2px lightgreen;
+         padding: 2px;
+         border-radius: 4px;
+         cursor: pointer;
+      }
+
+      img.button:hover {
+         border: solid 2px red;
+      }
+
+      /* ===== product.css ===== */
+      div.product {
+         display: flex;
+         align-items: center;
+      }
+
+      div.product:nth-of-type(even) {
+         border: solid thin #EEE;
+         background-color: #EEE;
+      }
+
+      div.product:nth-of-type(odd) {
+         border: solid thin #ddd;
+         background-color: #DDD;
+      }
+
+      div.product:hover {
+         border: solid thin red;
+      }
+
+      .petit {
+         font-size: smaller;
+      }
+
+      .info {
+         width: 70%;
+         position: relative;
+      }
+
+      .name {
+         padding: 2px;
+      }
+
+      .description {
+         font-size: smaller;
+         padding: 0px 4px;
+      }
+
+      .price {
+         padding: 0px 3px;
+         margin: 0px 15px;
+         text-align: center;
+         font-size: large;
+         font-weight: bold;
+      }
+
+      .weight {
+         position: absolute;
+         right: 3px;
+         top: 3px;
+         font-size: smaller;
+         font-style: italic;
+         color: #999;
+         margin: 0px 3px;
+      }
+
+      .weight::after {
+         content: 'g';
+         padding-left: 1px;
+      }
+
+      .stock {
+         font-weight: bold;
+         padding-left: 4px;
+         margin: 0px 10px;
+         text-align: center;
+      }
+
+      .imageProduit img {
+         border: solid 2px rgb(128, 128, 256);
+         border-radius: 6px;
+         width: 48px;
+      }
+
+      /* ===== productList.css ===== */
+      .filter {
+         position: absolute;
+         top: 15px;
+         right: 30px;
+         font-size: larger;
+         text-align: center;
+      }
+
+      .productsZone {
+         height: 90%;
+         overflow: scroll;
+      }
+
+      /* ===== cart.css ===== */
+      input[type=number] {
+         width: 48px;
+         text-align: right;
+         font-size: 18px;
+      }
+
+      .cart {
+         position: relative;
+      }
+
+      .total>div {
+         display: inline-block;
+      }
+
+      div.cart .imageProduit img {
+         border: solid 1px rgb(128, 128, 256);
+         border-radius: 4px;
+         width: 24px;
+      }
+
+      div.cart div.total {
+         border: solid 2px green;
+         margin: auto;
+         width: 98%;
+         padding: 8px 0px;
+         text-align: center;
+         background-color: wheat;
+         position: absolute;
+         bottom: 0px;
+         left: 2px;
+      }
+   </style>
+</head>
+
+<body>
+   <h1>Projet React : </h1>
+
+   <div id="insertReactHere"><!-- insertion point --></div>
+
+   <script type="text/babel" data-type="module">
+      const { useState } = React;
+
+      // ===== Image paths (relative to this index.html) =====
+      const IMAGES = {
+         nounours1: "src/data/images/nounours1.jpg",
+         nounours2: "src/data/images/nounours2.jpg",
+         ane: "src/data/images/ane.jpg",
+         bulbizarre: "src/data/images/bulbizarre.jpg",
+         cochon: "src/data/images/cochon.jpg",
+         donkekong: "src/data/images/donkekong.jpg",
+         girafe: "src/data/images/girafe.jpg",
+         hibou: "src/data/images/hibou.jpg",
+         link: "src/data/images/link.jpg",
+         nounours3: "src/data/images/nounours3.jpg",
+         panda: "src/data/images/panda.jpg",
+         pikachu: "src/data/images/pikachu.jpg",
+         poule: "src/data/images/poule.jpg",
+         renard: "src/data/images/renard.jpg",
+         riolu: "src/data/images/riolu.jpg",
+         salameche: "src/data/images/salameche.jpg",
+         panier: "src/assets/images/panier.jpg",
+         poubelle: "src/assets/images/poubelle.jpg",
+      };
+
+      // ===== Products data =====
+      const products = [
+         { id: 1, weight: 300, name: "Nounours marron", description: "un joli nounours marron avec un foulard", image: IMAGES.nounours1, price: 35, stock: 5 },
+         { id: 2, weight: 250, name: "Nounours blanc", description: "un ours blanc tout doux", image: IMAGES.nounours2, price: 42, stock: 10 },
+         { id: 3, weight: 320, name: "Peluche Ane gris", description: "joli petit ane gris", image: IMAGES.ane, price: 15, stock: 2 },
+         { id: 4, weight: 150, name: "Pokemon Bulbizarre", description: "Pokemon Bulbizarre", image: IMAGES.bulbizarre, price: 25, stock: 1 },
+         { id: 5, weight: 400, name: "Cochon rose", description: "un petit cochon rose tout frippé", image: IMAGES.cochon, price: 35, stock: 5 },
+         { id: 6, weight: 500, name: "Donkey Kong", description: "Le célèbre Donkey Kong", image: IMAGES.donkekong, price: 25, stock: 7 },
+         { id: 7, weight: 300, name: "Girafe", description: "Petite girafe assise", image: IMAGES.girafe, price: 23, stock: 5 },
+         { id: 8, weight: 222, name: "Peluche Hibou", description: "Un hibou tout en plume.", image: IMAGES.hibou, price: 22, stock: 4 },
+         { id: 9, weight: 351, name: "Link", description: "Link le héros de la série Zelda.", image: IMAGES.link, price: 25, stock: 3 },
+         { id: 10, weight: 302, name: "Nounours crème", description: "Il est pas migon avec ses grosses papattes ?", image: IMAGES.nounours3, price: 35, stock: 4 },
+         { id: 11, weight: 287, name: "Panda", description: "Un bon gros pnada joufflu", image: IMAGES.panda, price: 35, stock: 2 },
+         { id: 12, weight: 321, name: "Pokemon Pikachu", description: "Le plus célèbre des pokemons.", image: IMAGES.pikachu, price: 25, stock: 1 },
+         { id: 13, weight: 254, name: "Peluche Poule", description: "Une idée originale de peluche", image: IMAGES.poule, price: 27, stock: 11 },
+         { id: 14, weight: 300, name: "Renard", description: "Un renard très sympathique.", image: IMAGES.renard, price: 45, stock: 15 },
+         { id: 15, weight: 354, name: "Pokemon Riolu", description: "Pokemon Riolu", image: IMAGES.riolu, price: 25, stock: 2 },
+         { id: 16, weight: 298, name: "Pokemon Salameche", description: "Pokemon Salameche", image: IMAGES.salameche, price: 25, stock: 3 },
+      ];
+
+      // ===== TotalCart Component =====
+      const TotalCart = ({ total }) => {
+         return (
+            <div className="total">
+               <div>total commande :</div>
+               <div style={{ fontWeight: 'bold', fontSize: 'x-large', marginLeft: '10px' }}>
+                  {total} €
+               </div>
+            </div>
+         );
+      };
+
+      // ===== ProductFilter Component =====
+      const ProductFilter = ({ onFilterTextChange }) => {
+         return (
+            <div className="filter">
+               <input
+                  type="text"
+                  placeholder="filtrer les produits"
+                  onChange={(e) => onFilterTextChange(e.target.value)}
+               />
+            </div>
+         );
+      };
+
+      // ===== Product Component =====
+      const Product = ({ product }) => {
+         return (
+            <>
+               <div className="info">
+                  <div className="name">{product.name}</div>
+                  <div className="description">{product.description}</div>
+                  <div className="weight">{product.weight}</div>
+               </div>
+               <div className="imageProduit">
+                  <img src={product.image} alt={product.name} />
+               </div>
+               <div className="stock">
+                  qté<br />{product.stock}
+               </div>
+               <div className="price">{`${product.price}€`}</div>
+            </>
+         );
+      };
+
+      // ===== AddToCart Component =====
+      const AddToCart = ({ product, onAddToCart }) => {
+         return (
+            <img
+               className="button"
+               src={IMAGES.panier}
+               alt="Ajouter au panier"
+               onClick={() => onAddToCart(product)}
+            />
+         );
+      };
+
+      // ===== ForSaleProduct Component =====
+      const ForSaleProduct = ({ product, onAddToCart }) => {
+         return (
+            <div className="product">
+               <Product product={product} />
+               <AddToCart product={product} onAddToCart={onAddToCart} />
+            </div>
+         );
+      };
+
+      // ===== ProductInCart Component =====
+      const ProductInCart = ({ item, onUpdateQuantity, onRemoveFromCart }) => {
+         const handleQuantityChange = (e) => {
+            let value = parseInt(e.target.value, 10);
+            if (value < 1) value = 1;
+            if (value > item.product.stock) value = item.product.stock;
+            onUpdateQuantity(item.product.id, value);
+         };
+
+         return (
+            <div style={{ display: 'flex', alignItems: 'center', border: 'solid 1px #a44', marginBottom: '5px', padding: '2px', backgroundColor: '#eaeaea' }}>
+               <div style={{ flexGrow: 1, paddingLeft: '5px' }}>{item.product.name}</div>
+
+               <div className="imageProduit" style={{ margin: '0 5px' }}>
+                  <img src={item.product.image} alt={item.product.name} />
+               </div>
+
+               <input
+                  type="number"
+                  min="1"
+                  max={item.product.stock}
+                  value={item.quantity}
+                  onChange={handleQuantityChange}
+               />
+
+               <img
+                  className="button"
+                  src={IMAGES.poubelle}
+                  alt="Supprimer"
+                  onClick={() => onRemoveFromCart(item.product.id)}
+               />
+            </div>
+         );
+      };
+
+      // ===== ProductList Component =====
+      const ProductList = ({ products, onAddToCart }) => {
+         const [filterText, setFilterText] = useState('');
+
+         const filteredProducts = products.filter(product =>
+            product.name.toLowerCase().includes(filterText.toLowerCase())
+         );
+
+         return (
+            <div className="productList">
+               <ProductFilter onFilterTextChange={setFilterText} />
+               <div><h3>Boutique </h3></div>
+               <div className="productsZone">
+                  {filteredProducts.map(product => (
+                     <ForSaleProduct
+                        key={product.id}
+                        product={product}
+                        onAddToCart={onAddToCart}
+                     />
+                  ))}
+               </div>
+            </div>
+         );
+      };
+
+      // ===== ShoppingCart Component =====
+      const ShoppingCart = ({ cart, onUpdateQuantity, onRemoveFromCart }) => {
+         const totalWeight = cart.reduce((total, item) => total + (item.product.weight * item.quantity), 0);
+         const totalPrice = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+
+         return (
+            <div className="cart">
+               <div style={{ textAlign: 'right', fontSize: 'smaller', color: '#999', fontStyle: 'italic' }}>
+                  poids total {totalWeight} g
+               </div>
+               <h2>Panier</h2>
+               <div className="cart-items">
+                  {cart.map(item => (
+                     <ProductInCart
+                        key={item.product.id}
+                        item={item}
+                        onUpdateQuantity={onUpdateQuantity}
+                        onRemoveFromCart={onRemoveFromCart}
+                     />
+                  ))}
+               </div>
+               <TotalCart total={totalPrice} />
+            </div>
+         );
+      };
+
+      // ===== App Component =====
+      const App = () => {
+         const [cart, setCart] = useState([]);
+
+         const handleAddToCart = (product) => {
+            setCart((prevCart) => {
+               const existingItem = prevCart.find(item => item.product.id === product.id);
+               if (existingItem) {
+                  if (existingItem.quantity < product.stock) {
+                     return prevCart.map(item => {
+                        if (item.product.id === product.id) {
+                           return { ...item, quantity: item.quantity + 1 };
+                        } else {
+                           return item;
+                        }
+                     });
+                  }
+                  return prevCart;
+               } else {
+                  return [...prevCart, { product, quantity: 1 }];
+               }
+            });
+         };
+
+         const handleUpdateQuantity = (productId, quantity) => {
+            setCart((prevCart) =>
+               prevCart.map(item => {
+                  if (item.product.id === productId) {
+                     return { ...item, quantity: quantity };
+                  } else {
+                     return item;
+                  }
+               })
+            );
+         };
+
+         const handleRemoveFromCart = (productId) => {
+            setCart((prevCart) => prevCart.filter(item => item.product.id !== productId));
+         };
+
+         return (
+            <div>
+               <ProductList products={products} onAddToCart={handleAddToCart} />
+               <ShoppingCart
+                  cart={cart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemoveFromCart={handleRemoveFromCart}
+               />
+            </div>
+         );
+      };
+
+      // ===== Bootstrap React =====
+      const root = ReactDOM.createRoot(document.getElementById('insertReactHere'));
+      root.render(<App />);
+
+      console.log('le bundle a été généré !');
+   </script>
+</body>
+
+</html>
